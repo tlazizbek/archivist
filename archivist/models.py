@@ -1,9 +1,10 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass
 class RawDocument:
-    path: str
+    path: Path
     title: str
     source_type: str
     raw_text: str
@@ -14,7 +15,7 @@ class Chunk:
     document_id: int
     chunk_index: int
     content: str
-    token_count: int
+    token_count: int | None
 
 
 @dataclass
@@ -23,7 +24,7 @@ class ChunkRecord:
     document_id: int
     chunk_index: int
     content: str
-    embedding: list[float]
+    embedding: bytes | None
 
 
 @dataclass
@@ -37,7 +38,7 @@ class ScoredChunk:
 class QueryLogEntry:
     query_text: str
     retrieval_method: str
-    retrieved_chunk_ids: list[int]
-    answer_text: str
-    latency_ms: float
-    llm_model: str
+    retrieved_chunk_ids: str | None
+    answer_text: str | None
+    latency_ms: int | None
+    llm_model: str | None
