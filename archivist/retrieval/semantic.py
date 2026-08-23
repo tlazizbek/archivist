@@ -1,12 +1,19 @@
 import numpy as np
+
+from typing import Protocol
 from sklearn.metrics.pairwise import cosine_similarity
 
-from archivist.generation.llm_client import LLMClient
 from archivist.models import ChunkRecord, ScoredChunk
 
 
+class EmbeddingClient(Protocol):
+    def embed(self, text: str) -> list[float]:
+        ...
+
+
+
 class SemanticRetriever:
-    def __init__(self, client: LLMClient) -> None:
+    def __init__(self, client: EmbeddingClient) -> None:
         self.client = client
         self.chunks: list[ChunkRecord] = []
         self.vectors: np.ndarray | None = None
