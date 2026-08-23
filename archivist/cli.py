@@ -22,7 +22,12 @@ def ingest(path: str) -> None:
 
         document_id = insert_document(document)
 
+        if document_id is None:
+            print(f"Skipped: {document.title}")
+            continue
+
         insert_chunks(document_id, chunks)
+        print(f"Ingested: {document.title} ({len(chunks)} chunks)")
 
 
 def main() -> None:

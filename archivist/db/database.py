@@ -28,7 +28,7 @@ def init_db() -> None:
     finally:
         connection.close()
 
-def insert_document(doc: RawDocument) -> int:
+def insert_document(doc: RawDocument) -> int | None:
     content_hash = hashlib.sha256(
         doc.raw_text.encode("utf-8")
     ).hexdigest()
@@ -36,6 +36,18 @@ def insert_document(doc: RawDocument) -> int:
     connection = get_connection()
 
     try:
+        existing = connection.execute(
+            """
+            SELECT id
+            FROM documents
+            WHERE content_hash = ?
+            """,
+            (content_hash,),
+        ).fetchone()
+
+        if existing is not None:
+            return None
+
         cursor = connection.execute(
             """
             INSERT INTO documents (
