@@ -107,3 +107,11 @@ Semantic:
 Winner: Tie
 
 Reason: Both retrievers returned the same three most relevant chunks in the same order, showing that both methods handled this specific technical query well.
+
+## Day 17 — LLM Error Handling
+
+The LLM client uses a 30-second request timeout.
+
+Timeouts raise a RuntimeError instead of waiting indefinitely.
+
+HTTP 429 rate-limit responses also raise a RuntimeError. The client does not retry automatically because this project does not yet need retry or exponential-backoff infrastructure.
