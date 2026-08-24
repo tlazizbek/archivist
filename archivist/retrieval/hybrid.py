@@ -3,7 +3,7 @@ import numpy as np
 from archivist.models import ScoredChunk
 
 class HybridRetriever:
-    def __init__(self, keyword, semantic, weight: float) -> float:
+    def __init__(self, keyword, semantic, weight: float) -> None:
         self.keyword = keyword
         self.semantic = semantic
         self.weight = weight
