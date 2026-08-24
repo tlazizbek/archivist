@@ -37,7 +37,7 @@ class LLMClient:
                 "Content-Type": "application/json",
             },
             json={
-                "model": "openai/gpt-oss-20b:free",
+                "model": "openrouter/free",
                 "messages": [
                     {
                         "role": "user",
