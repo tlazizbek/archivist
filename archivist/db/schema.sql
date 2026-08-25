@@ -1,4 +1,4 @@
-CREATE TABLE documents (
+CREATE TABLE IF NOT EXISTS documents (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     title         TEXT NOT NULL,
     source_path   TEXT NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE documents (
     ingested_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE chunks (
+CREATE TABLE IF NOT EXISTS chunks (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     document_id   INTEGER NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
     chunk_index   INTEGER NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE chunks (
     UNIQUE(document_id, chunk_index)
 );
 
-CREATE TABLE query_logs (
+CREATE TABLE IF NOT EXISTS query_logs (
     id                    INTEGER PRIMARY KEY AUTOINCREMENT,
     query_text            TEXT NOT NULL,
     retrieval_method      TEXT NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE query_logs (
     created_at            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE query_feedback (
+CREATE TABLE IF NOT EXISTS query_feedback (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     query_log_id    INTEGER NOT NULL REFERENCES query_logs(id),
     rating          INTEGER,
