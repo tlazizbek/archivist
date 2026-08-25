@@ -9,6 +9,7 @@ from archivist.models import QueryLogEntry
 from archivist.retrieval.hybrid import HybridRetriever
 from archivist.retrieval.keyword import KeywordRetriever
 from archivist.retrieval.semantic import SemanticRetriever
+from archivist.cli import ingest
 
 
 from archivist.api.schemas import(
@@ -29,7 +30,12 @@ def health() -> dict:
 
 @app.post("/ingest", response_model=IngestResponse)
 def ingest_route(body: IngestRequest) -> IngestResponse:
-    raise NotImplementedError
+    documents_ingested, chunks_created = ingest(body.path)
+
+    return IngestResponse(
+        documents_ingested=documents_ingested,
+        chunks_created=chunks_created,
+    )
 
 @app.post("/query", response_model=QueryResponse)
 def query_route(body: QueryRequest) -> QueryResponse:
