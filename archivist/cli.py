@@ -6,8 +6,11 @@ from archivist.ingestion.cleaner import clean
 from archivist.ingestion.loaders import load_folder
 
 
-def ingest(path: str) -> None:
+def ingest(path: str) -> tuple[int, int]:
     init_db()
+
+    documents_ingested = 0
+    chunks_created = 0
 
     documents = load_folder(path)
 
@@ -27,7 +30,13 @@ def ingest(path: str) -> None:
             continue
 
         insert_chunks(document_id, chunks)
+
+        documents_ingested += 1
+        chunks_created += len(chunks)
+
         print(f"Ingested: {document.title} ({len(chunks)} chunks)")
+
+    return documents_ingested, chunks_created
 
 
 def main() -> None:
