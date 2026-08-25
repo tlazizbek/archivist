@@ -1,10 +1,11 @@
 import hashlib
 import sqlite3
+import json
 from pathlib import Path
 from sqlite3 import Connection
 
 from archivist.config import DB_PATH
-from archivist.models import Chunk, ChunkRecord, RawDocument
+from archivist.models import Chunk, ChunkRecord, RawDocument, QueryLogEntry
 
 
 from archivist.config import DB_PATH
@@ -133,3 +134,34 @@ def get_all_chunks() -> list[ChunkRecord]:
         ]
     finally:
         connection.close()
+
+def log_query(entry: QueryLogEntry) -> int:
+    connection = get_connection()
+
+    cursor = connection.execute(
+        """
+        INSERT INTO query_logs (
+            query_text,
+            retrieval_method,
+            retrieved_chunk_ids,
+            answer_text,
+            latency_ms,
+            llm_model
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            entry.query_text,
+            entry.retrieval_method,
+            json.dumps(entry.retrieved_chunk_ids),
+            entry.answer_text,
+            entry.latency_ms,
+            entry.llm_model,
+        ),
+    )
+
+    connection.commit()
+    if cursor.lastrowid is None:
+        raise RuntimeError("Failed to get inserted query log ID")
+
+    return cursor.lastrowid

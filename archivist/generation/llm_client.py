@@ -27,7 +27,7 @@ class LLMClient:
 
         data = response.json()
 
-        return data["data"][0]["embedding"]["content"]
+        return data["data"][0]["embedding"]
 
     def complete(self, prompt: str) -> str:
         response = requests.post(
