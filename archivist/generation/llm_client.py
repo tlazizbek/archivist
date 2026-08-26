@@ -29,6 +29,37 @@ class LLMClient:
 
         return data["data"][0]["embedding"]
 
+    def embed_batch(self, texts: list[str]) -> list[list[float]]:
+        response = requests.post(
+            f"{LLM_BASE_URL}/embeddings",
+            headers={
+                "Authorization": f"Bearer {LLM_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "input": texts,
+                "model": "text-embedding-3-small",
+            },
+            timeout=120,
+        )
+
+        if response.status_code == 429:
+            raise RuntimeError(
+                "LLM provider rate limit reached. Try again later"
+            )
+
+        response.raise_for_status()
+
+        data = response.json()
+
+        return [
+            item["embedding"]
+            for item in sorted(
+                data['data'],
+                key=lambda item: item['index']
+            )
+        ]
+
     def complete(self, prompt: str) -> str:
         response = requests.post(
             f"{LLM_BASE_URL}/chat/completions",

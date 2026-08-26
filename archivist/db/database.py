@@ -135,6 +135,28 @@ def get_all_chunks() -> list[ChunkRecord]:
     finally:
         connection.close()
 
+def update_chunk_embeddings(
+    embeddings: list[tuple[int, bytes]]
+) -> None:
+    connection = get_connection()
+
+    try:
+        connection.executemany(
+            """
+            UPDATE chunks
+            SET embedding = ?
+            WHERE id = ?
+            """,
+            [
+                (embedding, chunk_id)
+                for chunk_id, embedding in embeddings
+            ]
+        )
+
+        connection.commit()
+    finally:
+        connection.close()
+
 def log_query(entry: QueryLogEntry) -> int:
     connection = get_connection()
 
