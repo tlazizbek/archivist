@@ -1,14 +1,11 @@
 import hashlib
 import sqlite3
-import json
 from pathlib import Path
 from sqlite3 import Connection
 
 from archivist.config import DB_PATH
 from archivist.models import Chunk, ChunkRecord, RawDocument, QueryLogEntry
 
-
-from archivist.config import DB_PATH
 
 def get_connection() -> Connection:
     connection = sqlite3.connect(
@@ -175,7 +172,7 @@ def log_query(entry: QueryLogEntry) -> int:
         (
             entry.query_text,
             entry.retrieval_method,
-            json.dumps(entry.retrieved_chunk_ids),
+            entry.retrieved_chunk_ids,
             entry.answer_text,
             entry.latency_ms,
             entry.llm_model,
