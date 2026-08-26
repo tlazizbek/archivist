@@ -1,3 +1,5 @@
+import pickle
+
 import numpy as np
 
 from typing import Protocol
@@ -11,7 +13,6 @@ class EmbeddingClient(Protocol):
         ...
 
 
-
 class SemanticRetriever:
     def __init__(self, client: EmbeddingClient) -> None:
         self.client = client
@@ -21,10 +22,13 @@ class SemanticRetriever:
     def fit(self, chunks: list[ChunkRecord]) -> None:
         self.chunks = chunks
 
-        vectors = [
-            self.client.embed(chunk.content)
-            for chunk in chunks
-        ]
+        vectors = []
+
+        for chunk in chunks:
+            if chunk.embedding is not None:
+                vectors.append(pickle.loads(chunk.embedding))
+            else:
+                vectors.append(self.client.embed(chunk.content))
 
         self.vectors = np.array(vectors, dtype=float)
 
