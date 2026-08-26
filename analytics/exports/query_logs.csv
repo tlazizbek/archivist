@@ -1,1 +1,0 @@
-id,query_text,retrieval_method,retrieved_chunk_ids,answer_text,latency_ms,llm_model,created_at
