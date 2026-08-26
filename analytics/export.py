@@ -36,6 +36,7 @@ def export_corpus_stats() -> pd.DataFrame:
             SELECT
                 d.id AS document_id,
                 d.title,
+                d.ingested_at,
                 COUNT(c.id) AS chunk_count,
                 COALESCE(SUM(LENGTH(c.content)), 0) AS character_count
             FROM documents d
