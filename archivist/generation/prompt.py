@@ -12,17 +12,12 @@ def build_prompt(query: str, chunks: list[ScoredChunk]) -> str:
 
     context = "\n\n".join(context_parts)
 
-    return f"""Answer the user's question using only the provided context.
-
-               If the answer cannot be found in the provided context, say that you do not have enough information.
-
-               Do not use outside knowledge.
-
-               Context:
-
-               {context}
-
-               User question:
-               {query}
-
-               Answer:"""
+    return (
+        "Answer the user's question using only the provided context.\n"
+        "If the answer cannot be found in the provided context, say that "
+        "you do not have enough information.\n"
+        "Do not use outside knowledge.\n\n"
+        f"Context:\n\n{context}\n\n"
+        f"User question:\n{query}\n\n"
+        "Answer:"
+    )
