@@ -43,19 +43,30 @@ def query_route(body: QueryRequest) -> QueryResponse:
 
     chunks = get_all_chunks()
 
-    keyword = KeywordRetriever()
-    keyword.fit(chunks)
+    if body.method == "keyword":
+        retriever = KeywordRetriever()
+        retriever.fit(chunks)
+        results = retriever.search(body.question, top_k=5)
 
-    semantic = SemanticRetriever(LLMClient())
-    semantic.fit(chunks)
+    elif body.method == "semantic":
+        retriever = SemanticRetriever(LLMClient())
+        retriever.fit(chunks)
+        results = retriever.search(body.question, top_k=5)
 
-    hybrid =HybridRetriever(
-        keyword=keyword,
-        semantic=semantic,
-        weight=0.5,
-    )
+    else:
+        keyword = KeywordRetriever()
+        keyword.fit(chunks)
 
-    results = hybrid.search(body.question, top_k=5)
+        semantic = SemanticRetriever(LLMClient())
+        semantic.fit(chunks)
+
+        retriever = HybridRetriever(
+            keyword=keyword,
+            semantic=semantic,
+            weight=0.5,
+        )
+
+        results = retriever.search(body.question, top_k=5)
 
     prompt = build_prompt(body.question, results)
 
