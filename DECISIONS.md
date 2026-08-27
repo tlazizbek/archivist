@@ -10,103 +10,133 @@
 
 ## Day 14 — Retrieval Bake-Off
 
+Run against the real corpus (43 Project Gutenberg books). Top 3 shown per
+retriever; scores are cosine similarity. Reproduce with `scratch_bakeoff.py`.
+
 ### 1. Exact-term query
 
-Query: `organization membership`
+Query: `whale hunting harpoon`
 
 Keyword:
-1. chunk 5 — About organization membership
-2. chunk 15 — Concepts for account and profile
-3. chunk 6 — Your organization's profile
+1. chunk 120 — Moby Dick (the "Sperm Whale" classification passage)
+2. chunk 127 — Moby Dick (porpoise/whale description)
+3. chunk 8 — Moby Dick (opening whale verse)
 
 Semantic:
-1. chunk 5 — About organization membership
-2. chunk 6 — Your organization's profile
-3. chunk 18 — Email/account access content
+1. chunk 240 — Moby Dick (fastening an extra line to the harpoon)
+2. chunk 246 — Moby Dick (the struck whale rolling into view)
+3. chunk 247 — Moby Dick (whether the dart is successful)
 
-Winner: Keyword
+Winner: Semantic
 
-Reason: Both retrievers found the correct organization membership chunk first, but keyword retrieval produced a more focused top 3 with fewer unrelated results.
+Reason: Both retrievers correctly stayed inside Moby Dick, but keyword matched on
+raw whale vocabulary and returned descriptive/classification passages, while
+semantic surfaced the chunks that actually describe harpooning a whale — closer
+to the intent of the query.
 
 ---
 
 ### 2. Paraphrase query
 
-Query: `How can I become part of an organization?`
+Query: `a young orphan girl adopted by a family living on a farm`
 
 Keyword:
-1. chunk 5 — About organization membership
-2. chunk 17 — Personal account management
-3. chunk 6 — Your organization's profile
+1. chunk 1242 — Slave ships and slaving (matched the literal word "farm")
+2. chunk 2052 — Anne of Green Gables
+3. chunk 7753 — A Study in Scarlet (matched "farm")
 
 Semantic:
-1. chunk 5 — About organization membership
-2. chunk 6 — Your organization's profile
-3. chunk 20 — Contributions on your profile
+1. chunk 2054 — Anne of Green Gables
+2. chunk 2076 — Anne of Green Gables ("an orphan and folks were at their wits' end")
+3. chunk 4275 — Frankenstein
 
 Winner: Semantic
 
-Reason: Both methods found the correct membership chunk first, but semantic retrieval ranked another organization-related chunk second and handled the paraphrased wording well.
+Reason: This is the clearest split. Keyword was pulled off-topic by the literal
+word "farm" and put an unrelated book first; semantic understood the description
+and returned two Anne of Green Gables chunks, one of which is explicitly about
+being an orphan.
 
 ---
 
 ### 3. Typo query
 
-Query: `organizatoin membership`
+Query: `Sherlok Holmes detective` (Sherlock misspelled)
 
 Keyword:
-1. chunk 5 — About organization membership
-2. chunk 15 — Concepts for account and profile
-3. chunk 17 — Personal account management
+1. chunk 7731 — A Study in Scarlet (a Holmes novel)
+2. chunk 3526 — The Adventures of Sherlock Holmes
+3. chunk 3423 — The Adventures of Sherlock Holmes
 
 Semantic:
-1. chunk 5 — About organization membership
-2. chunk 6 — Your organization's profile
-3. chunk 17 — Personal account management
+1. chunk 3516 — The Adventures of Sherlock Holmes
+2. chunk 3386 — The Adventures of Sherlock Holmes
+3. chunk 3418 — The Adventures of Sherlock Holmes
 
-Winner: Semantic
+Winner: Slight semantic
 
-Reason: Semantic retrieval remained focused on organization-related content despite the misspelled word, while keyword retrieval returned more general account content.
+Reason: Both landed on Holmes material despite the misspelling. The typo hurt
+less than expected because two of the three query words ("Holmes", "detective")
+were spelled correctly, so keyword still had exact terms to match. Semantic was
+more consistent, keeping all three results inside the Sherlock Holmes stories.
 
 ---
 
 ### 4. Very short query
 
-Query: `username`
+Query: `vampire`
 
 Keyword:
-1. chunk 3 — Username changes
-2. chunk 4 — Username reference content
-3. chunk 15 — Concepts for account and profile
+1. chunk 8413 — Dracula
+2. chunk 8287 — Dracula
+3. chunk 8344 — Dracula
 
 Semantic:
-1. chunk 3 — Username changes
-2. chunk 19 — Personal account/profile content
-3. chunk 15 — Concepts for account and profile
+1. chunk 8288 — Dracula ("take it, then, that the vampire...")
+2. chunk 8413 — Dracula
+3. chunk 8287 — Dracula
 
-Winner: Keyword
+Winner: Tie
 
-Reason: The exact keyword strongly identifies the username documentation, and keyword retrieval produced a highly relevant second result containing username-related content.
+Reason: A single distinctive word both methods handle well — every result is
+from Dracula. Semantic's top chunk is the one that most directly discusses the
+vampire, but the difference is marginal.
 
 ---
 
 ### 5. Specific/technical query
 
-Query: `How can I change the email address associated with my GitHub account?`
+Query: `What creature does the scientist assemble from dead body parts?`
 
 Keyword:
-1. chunk 14 — Email/account verification content
-2. chunk 13 — Email addresses
-3. chunk 18 — Email/account access content
+1. chunk 3975 — Thus Spake Zarathustra (matched "body", "earth")
+2. chunk 8252 — Dracula
+3. chunk 4330 — Frankenstein
 
 Semantic:
-1. chunk 14 — Email/account verification content
-2. chunk 13 — Email addresses
-3. chunk 18 — Email/account access content
+1. chunk 2437 — The war of the worlds
+2. chunk 2359 — The war of the worlds
+3. chunk 6609 — The Time Machine
 
-Winner: Tie
+Winner: Keyword
 
-Reason: Both retrievers returned the same three most relevant chunks in the same order, showing that both methods handled this specific technical query well.
+Reason: The surprising one. The correct answer is Frankenstein, and neither
+retriever handled it cleanly. Keyword at least got Frankenstein into the top 3
+via the literal word "body"; semantic over-generalized to the "science-fiction
+creature" theme and returned War of the Worlds and The Time Machine, missing
+Frankenstein entirely.
+
+---
+
+### Takeaways
+
+- Semantic clearly wins on paraphrase (query 2) and is steadier on short or
+  ambiguous queries (3, 4).
+- Keyword can still win when a distinctive literal term is present, and it
+  narrowly beat semantic on the hardest query (5).
+- Neither is reliable on an indirect description that names none of the book's
+  own vocabulary. This split is exactly what motivates the hybrid retriever in
+  Day 16.
 
 ## Day 17 — LLM Error Handling
 
