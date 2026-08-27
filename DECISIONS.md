@@ -8,6 +8,30 @@
 - A 10% overlap preserves context between adjacent chunks.
 - These values are initial defaults and can be changed after retrieval evaluation.
 
+## Ingestion De-duplication (Day 10)
+
+`insert_document` returns `int | None`, not the plain `int` in the Section 9.5
+manifest. Re-running ingest on an already-ingested folder should not create
+duplicate rows, so the function hashes the raw text into `content_hash` (which is
+`UNIQUE` in the schema) and returns `None` when a document with that hash already
+exists. The CLI reads `None` as "skip this file" and prints it. This is the one
+place the return type intentionally differs from the manifest, and it implements
+the Day 10 decision about re-ingestion behavior.
+
+## Batch Embedding
+
+The manifest lists only `LLMClient.embed` (one text per call). Embedding the full
+corpus one chunk at a time (8500+ chunks) is slow and makes far more HTTP requests
+than necessary, so two helpers were added:
+
+- `LLMClient.embed_batch(texts)` — embeds up to 50 chunks in a single request.
+- `update_chunk_embeddings(rows)` — persists the vectors into the `embedding`
+  BLOB column already defined in the schema.
+
+`scripts/embed_corpus.py` runs this once; afterwards `SemanticRetriever.fit`
+reuses the stored vectors instead of re-embedding on every startup. `embed` is
+kept and still used to embed the query at search time.
+
 ## Day 14 — Retrieval Bake-Off
 
 Run against the real corpus (43 Project Gutenberg books). Top 3 shown per
