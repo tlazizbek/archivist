@@ -1,5 +1,11 @@
 # Archivist
 
+![Python](https://img.shields.io/badge/Python-3.13+-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white)
+![uv](https://img.shields.io/badge/packaged%20with-uv-DE5FE9?logo=uv&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-35%20passing-brightgreen)
+
 > Point it at a folder of documents and ask them questions in plain English.
 
 **Archivist** turns a pile of plain-text files into a knowledge base you can talk to.
