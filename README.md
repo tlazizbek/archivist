@@ -41,37 +41,26 @@ Retrieval-Augmented Generation pipeline end to end rather than a demo, so I test
 public-domain books from Project Gutenberg**, where the search has to hold up over real,
 messy, full-length text.
 
-## Quick Start
+## 🚀 Quick Start
 
-**Requirements**
-
-- Python 3.13+
-- [uv](https://docs.astral.sh/uv/)
-- An LLM provider with an OpenAI-compatible `/embeddings` and `/chat/completions` API
-  (built against OpenRouter's free tier)
-
-**Get running in three steps**
+You need [Python 3.13+](https://www.python.org/), [uv](https://docs.astral.sh/uv/), and an
+LLM provider key (built against OpenRouter's free tier).
 
 ```bash
 # 1. Install dependencies
 uv sync
 
-# 2. Add your provider details (edit .env and fill in LLM_API_KEY and LLM_BASE_URL)
+# 2. Add your provider key (edit .env: fill in LLM_API_KEY and LLM_BASE_URL)
 cp .env.example .env
 
-# 3. Set up everything and launch, in one command
+# 3. Set up everything and launch
 uv run archivist start --docs data/raw
 ```
 
-When it is ready, Archivist prints a link (for example `http://127.0.0.1:8000/docs`).
-**Open that link in your browser to ask questions**, no terminal or `curl` required.
-Press `Ctrl+C` to stop it.
+Archivist prints a link (for example `http://127.0.0.1:8000/docs`).
+**Open it in your browser and start asking questions.** No terminal or `curl` needed.
 
-On later runs your documents are already added, so you can just:
-
-```bash
-uv run archivist start
-```
+Already added your documents on a previous run? Just `uv run archivist start`.
 
 ## Usage
 
