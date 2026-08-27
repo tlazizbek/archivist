@@ -21,8 +21,9 @@ The system has six layers:
    (embeddings), and a hybrid that merges the two.
 4. **Generation** (`archivist/generation/`): build the prompt from the pieces that were found
    and send it to the LLM.
-5. **Interface** (`archivist/cli.py`, `archivist/api/`): an `ingest` command for the terminal
-   and a FastAPI service with `/ingest`, `/query`, and `/health`.
+5. **Interface** (`archivist/cli.py`, `archivist/api/`): a `start` command that sets up and
+   launches everything in one step, an `ingest` command for the terminal, and a FastAPI
+   service with `/ingest`, `/query`, and `/health`.
 6. **Analytics** (`analytics/`): pull the logs with Pandas, save them as CSVs, and analyze them
    in a notebook.
 
@@ -60,9 +61,31 @@ LLM_BASE_URL=https://your-provider/api/v1
 DB_PATH=./archivist.db
 ```
 
+## Quick start
+
+If you just want to use Archivist, this is all you need. After the setup above,
+run one command:
+
+```bash
+uv run archivist start --docs data/raw
+```
+
+It creates the database, adds the documents in that folder, builds the search
+index, and starts the server. When it is ready it prints a link, for example
+`http://127.0.0.1:8000/docs`. Open that link in your browser to ask questions,
+with no terminal or `curl` required. Press Ctrl+C in the terminal to stop it.
+
+Leave off `--docs` on later runs once your documents are already added:
+
+```bash
+uv run archivist start
+```
+
 ## Usage
 
-Run these from the project root. Put `uv run` in front of each one (or activate the venv first).
+The steps below are the same work broken into separate commands, useful if you
+want to run one stage at a time. Run these from the project root. Put `uv run`
+in front of each one (or activate the venv first).
 
 **Add a folder of documents.** The first run creates the database. It cleans and splits every
 file, and skips any file that was already added:
