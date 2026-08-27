@@ -1,5 +1,7 @@
 import time
 import json
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
 from archivist.db.database import get_all_chunks, log_query
@@ -20,7 +22,53 @@ from archivist.api.schemas import(
 )
 
 
-app = FastAPI()
+class RetrieverState:
+    """Holds retrievers fitted once over all chunks and reused per request."""
+
+    def __init__(self) -> None:
+        self.keyword: KeywordRetriever | None = None
+        self.semantic: SemanticRetriever | None = None
+
+    def rebuild(self) -> None:
+        chunks = get_all_chunks()
+
+        keyword = KeywordRetriever()
+        semantic = SemanticRetriever(LLMClient())
+
+        if chunks:
+            keyword.fit(chunks)
+            semantic.fit(chunks)
+
+        self.keyword = keyword
+        self.semantic = semantic
+
+    def for_method(self, method: str):
+        if self.keyword is None or self.semantic is None:
+            self.rebuild()
+
+        if method == "keyword":
+            return self.keyword
+
+        if method == "semantic":
+            return self.semantic
+
+        return HybridRetriever(
+            keyword=self.keyword,
+            semantic=self.semantic,
+            weight=0.5,
+        )
+
+
+retrievers = RetrieverState()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    retrievers.rebuild()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/health")
@@ -32,6 +80,8 @@ def health() -> dict:
 def ingest_route(body: IngestRequest) -> IngestResponse:
     documents_ingested, chunks_created = ingest(body.path)
 
+    retrievers.rebuild()
+
     return IngestResponse(
         documents_ingested=documents_ingested,
         chunks_created=chunks_created,
@@ -41,32 +91,8 @@ def ingest_route(body: IngestRequest) -> IngestResponse:
 def query_route(body: QueryRequest) -> QueryResponse:
     start = time.perf_counter()
 
-    chunks = get_all_chunks()
-
-    if body.method == "keyword":
-        retriever = KeywordRetriever()
-        retriever.fit(chunks)
-        results = retriever.search(body.question, top_k=5)
-
-    elif body.method == "semantic":
-        retriever = SemanticRetriever(LLMClient())
-        retriever.fit(chunks)
-        results = retriever.search(body.question, top_k=5)
-
-    else:
-        keyword = KeywordRetriever()
-        keyword.fit(chunks)
-
-        semantic = SemanticRetriever(LLMClient())
-        semantic.fit(chunks)
-
-        retriever = HybridRetriever(
-            keyword=keyword,
-            semantic=semantic,
-            weight=0.5,
-        )
-
-        results = retriever.search(body.question, top_k=5)
+    retriever = retrievers.for_method(body.method)
+    results = retriever.search(body.question, top_k=5)
 
     prompt = build_prompt(body.question, results)
 
