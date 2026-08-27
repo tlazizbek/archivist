@@ -5,6 +5,7 @@
 ![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white)
 ![uv](https://img.shields.io/badge/packaged%20with-uv-DE5FE9?logo=uv&logoColor=white)
 ![Tests](https://img.shields.io/badge/tests-35%20passing-brightgreen)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 > Point it at a folder of documents and ask them questions in plain English.
 
@@ -265,3 +266,7 @@ uv run archivist start --docs data/raw
 Bug reports and suggestions are welcome. Please open an issue first to discuss the change,
 then fork the repository, create a branch, make sure `uv run pytest` passes, and open a pull
 request against `main` describing what changed and why.
+
+## License
+
+Released under the [MIT License](LICENSE).
