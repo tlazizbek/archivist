@@ -62,67 +62,119 @@ Archivist prints a link (for example `http://127.0.0.1:8000/docs`).
 
 Already added your documents on a previous run? Just `uv run archivist start`.
 
-## Usage
+## 📖 Usage
 
-The `start` command above bundles the whole workflow. If you would rather run one stage
-at a time, or wire Archivist into something else, each step is also available on its own.
-Run these from the project root with `uv run` in front (or activate the venv first).
+The `start` command bundles the whole workflow, but every stage is also available on its own,
+so you can run one step at a time or wire Archivist into something else. Run everything from
+the project root with `uv run` in front (or activate the venv first).
 
-### Add documents
+### Command-line reference
 
-The first run creates the database. Text is cleaned and split into overlapping pieces,
-and any file that was already added is skipped.
+**`archivist start`** sets up everything (database, ingestion, embeddings) and launches the
+web service in one step.
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--docs <folder>` | none | A folder of `.txt` / `.md` documents to add before starting. Omit it once your documents are already ingested. |
+| `--port <number>` | `8000` | Port to serve the web service on. |
+
+**`archivist ingest <folder>`** adds documents without starting the server. The first run
+creates the database. Each file is cleaned and split into overlapping pieces, and any file
+that was already added (by content) is skipped.
 
 ```bash
 uv run archivist ingest data/raw
 ```
 
-### Build the search index
-
-Work out the meaning (embedding) of each piece so semantic and hybrid search can use it.
-This runs in batches and saves the result, so you only do it once per set of documents.
+**Supporting scripts:**
 
 ```bash
-uv run python -m scripts.embed_corpus
+uv run python -m scripts.embed_corpus   # embed any pieces missing an embedding
+uv run python -m analytics.export       # export logs + corpus stats to CSV
+uv run pytest                           # run the test suite
 ```
 
-### Run the web service
+### Configuration
+
+Set these in your `.env` file (see `.env.example`):
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `LLM_API_KEY` | yes | API key for your LLM provider. |
+| `LLM_BASE_URL` | yes | Base URL of an OpenAI-compatible API (has `/embeddings` and `/chat/completions`). |
+| `DB_PATH` | no | Path to the SQLite database file (default `./archivist.db`). |
+
+### Web API reference
+
+Start the service directly with autoreload for development:
 
 ```bash
 uv run uvicorn archivist.api.app:app --reload
 ```
 
-Then, for developers, hit the API directly:
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/health` | Liveness check. Returns `{"status": "ok"}`. |
+| `POST` | `/ingest` | Ingest a folder on the server. Body: `{"path": "<folder>"}`. |
+| `POST` | `/query` | Ask a question. Body and response detailed below. |
+| `GET` | `/docs` | Interactive API explorer (Swagger UI), usable from the browser. |
+
+**`POST /query` request**
+
+| Field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `question` | string | required | The question to answer. |
+| `method` | `keyword` \| `semantic` \| `hybrid` | `hybrid` | Which retrieval strategy to use (see below). |
+
+**`POST /query` response**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `answer` | string | The grounded answer generated from the retrieved passages. |
+| `sources` | list | The passages used, each as `{"chunk_id", "document_id"}`. |
+| `latency_ms` | integer | End-to-end time to answer, in milliseconds. |
+
+Every question is also written to the `query_logs` table.
+
+### Retrieval methods
+
+The `method` field picks how relevant passages are found. The top 5 passages are used either way.
+
+| Method | How it works | Best for |
+| --- | --- | --- |
+| `keyword` | TF-IDF exact-word matching. | Names, IDs, and specific terms. |
+| `semantic` | Embedding (meaning) similarity. | Rephrased or conceptual questions. |
+| `hybrid` (default) | Merges both, normalized and weighted 50/50. | General use. Good all-rounder. |
+
+### Examples
+
+Ask a question with the default hybrid search:
 
 ```bash
-# is it alive?
-curl http://127.0.0.1:8000/health
-
-# ask a question (method: keyword | semantic | hybrid; defaults to hybrid)
 curl -X POST http://127.0.0.1:8000/query \
   -H "Content-Type: application/json" \
-  -d '{"question": "What are the characteristics of sperm whales?", "method": "hybrid"}'
+  -d '{"question": "What are the characteristics of sperm whales?"}'
 ```
 
-The `/query` response contains the answer, the passages used as sources, and the
-latency in milliseconds. Every question is saved to `query_logs`.
-
-### Run the tests
+Force exact-word (keyword) search for a specific name:
 
 ```bash
-uv run pytest
+curl -X POST http://127.0.0.1:8000/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Who is Captain Ahab?", "method": "keyword"}'
+```
+
+Launch on a different port with a fresh set of documents:
+
+```bash
+uv run archivist start --docs ./my-notes --port 9000
 ```
 
 ### Analytics
 
-Export the logs and corpus stats as CSVs, or run the notebook from top to bottom.
-
-```bash
-uv run python -m analytics.export   # writes analytics/exports/*.csv
-```
-
-`analytics/notebooks/analysis.ipynb` works out queries per day, average and p95 latency,
-which search methods were used, and the most-retrieved documents.
+`analytics/export` writes CSVs to `analytics/exports/`, and
+`analytics/notebooks/analysis.ipynb` runs top to bottom to work out queries per day, average
+and p95 latency, which search methods were used, and the most-retrieved documents.
 
 ## How it works
 
