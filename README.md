@@ -1,34 +1,36 @@
 # Archivist
 
-A backend service that turns a folder of plain-text documents into a searchable,
-question-answering knowledge base. It ingests `.txt`/`.md` files, splits them into
-overlapping chunks, indexes them for both keyword and semantic search, and answers
-natural-language questions with an LLM that is instructed to speak only from the
-retrieved text. Every query is logged, and those logs feed a small analytics layer
-and a Power BI dashboard.
+Archivist turns a folder of plain-text documents into a searchable, question-answering
+knowledge base. It reads `.txt` and `.md` files and splits them into small overlapping
+pieces. It then indexes those pieces for two kinds of search: matching the exact words, and
+matching the meaning. When you ask a question, it finds the most relevant pieces and answers
+from them with an LLM that is told to use only what it found. Every question is logged, and
+those logs feed a small analytics layer and a Power BI dashboard.
 
-This is my Boot.dev backend + AI capstone. The development corpus is 43 public-domain
-books from Project Gutenberg.
+This is my Boot.dev backend + AI capstone. I built it on 43 public-domain books from
+Project Gutenberg.
 
 ## Architecture
 
-The system is six layers:
+The system has six layers:
 
-1. **Ingestion** (`archivist/ingestion/`) — read files, clean the text, split into chunks.
-2. **Storage** (`archivist/db/`) — SQLite: `documents`, `chunks`, `query_logs` (+ `query_feedback` for later).
-3. **Retrieval** (`archivist/retrieval/`) — a TF-IDF keyword retriever, an embedding-based
-   semantic retriever, and a hybrid retriever that merges the two.
-4. **Generation** (`archivist/generation/`) — build a grounded prompt from the retrieved
-   chunks and call the LLM over HTTP.
-5. **Interface** (`archivist/cli.py`, `archivist/api/`) — a CLI `ingest` command and a
-   FastAPI service (`/ingest`, `/query`, `/health`).
-6. **Analytics** (`analytics/`) — pull the logs with Pandas, export CSVs, and chart them in Power BI.
+1. **Ingestion** (`archivist/ingestion/`) — read the files, clean the text, and split it into pieces.
+2. **Storage** (`archivist/db/`) — an SQLite database with three tables: `documents`, `chunks`,
+   and `query_logs` (`query_feedback` is for later).
+3. **Retrieval** (`archivist/retrieval/`) — three searchers: keyword (TF-IDF), semantic
+   (embeddings), and a hybrid that merges the two.
+4. **Generation** (`archivist/generation/`) — build the prompt from the pieces that were found
+   and send it to the LLM.
+5. **Interface** (`archivist/cli.py`, `archivist/api/`) — an `ingest` command for the terminal
+   and a FastAPI service with `/ingest`, `/query`, and `/health`.
+6. **Analytics** (`analytics/`) — pull the logs with Pandas, save them as CSVs, and chart them
+   in Power BI.
 
 ## Requirements
 
 - Python 3.13+
 - An LLM provider with an OpenAI-compatible `/embeddings` and `/chat/completions` API
-  (developed against OpenRouter's free tier).
+  (built against OpenRouter's free tier).
 
 ## Setup
 
@@ -46,7 +48,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Then create a `.env` from the example and fill in your provider details:
+Then copy the example `.env` and fill in your provider details:
 
 ```bash
 cp .env.example .env
@@ -60,17 +62,18 @@ DB_PATH=./archivist.db
 
 ## Usage
 
-All commands assume you are in the project root. Prefix with `uv run` (or activate the venv first).
+Run these from the project root. Put `uv run` in front of each one (or activate the venv first).
 
-**Ingest a folder.** This creates the database on first run, cleans and chunks every
-file, and skips any file already ingested:
+**Add a folder of documents.** The first run creates the database. It cleans and splits every
+file, and skips any file that was already added:
 
 ```bash
 uv run python -m archivist.cli ingest data/raw
 ```
 
-**Generate embeddings** for the ingested chunks (needed for semantic and hybrid search).
-It embeds in batches and stores the vectors in the database, so it only runs once per corpus:
+**Work out the meaning of each piece** so that semantic and hybrid search can use it. This runs
+in batches and saves the results in the database, so you only need to run it once per set of
+documents:
 
 ```bash
 uv run python -m scripts.embed_corpus
@@ -83,7 +86,7 @@ uv run uvicorn archivist.api.app:app --reload
 ```
 
 ```bash
-# liveness
+# is it alive?
 curl http://127.0.0.1:8000/health
 
 # ask a question (method: keyword | semantic | hybrid; defaults to hybrid)
@@ -92,8 +95,8 @@ curl -X POST http://127.0.0.1:8000/query \
   -d '{"question": "What are the characteristics of sperm whales?", "method": "hybrid"}'
 ```
 
-`/query` returns the answer, the source chunks it was built from, and the latency in
-milliseconds, and writes a row to `query_logs`.
+The `/query` response has the answer, the pieces it used as sources, and how long it took in
+milliseconds. Each question is also saved to `query_logs`.
 
 **Run the tests:**
 
@@ -101,15 +104,15 @@ milliseconds, and writes a row to `query_logs`.
 uv run pytest
 ```
 
-**Analytics.** Export the logs and corpus stats to CSV, or run the notebook end to end:
+**Analytics.** Save the logs and corpus stats as CSVs, or run the notebook from top to bottom:
 
 ```bash
 uv run python -m analytics.export           # writes analytics/exports/*.csv
 ```
 
-`analytics/notebooks/analysis.ipynb` computes queries per day, average and p95 latency,
-retrieval-method usage, and the most-retrieved documents, and exports the CSVs the Power BI
-dashboard reads (`dashboard/archivist.pbix`).
+`analytics/notebooks/analysis.ipynb` works out queries per day, average and p95 latency, which
+search methods were used, and the most-retrieved documents. It saves the CSVs that the Power BI
+dashboard (`dashboard/archivist.pbix`) reads.
 
 ## Key design decisions
 
@@ -133,6 +136,6 @@ The full reasoning, including the search comparison I ran, is in
 
 ## Project status
 
-MVP through the analytics layer. Stretch goals (reranking, an agentic loop, an evaluation
-harness) are scoped in the plan but not yet built. `archivist/retrieval/reranker.py` and
-`archivist/agent/loop.py` are placeholders for that work.
+The core project is done through the analytics layer. The stretch goals — reranking, an agent
+loop, and an evaluation harness — are planned but not built yet. `archivist/retrieval/reranker.py`
+and `archivist/agent/loop.py` are empty placeholders for them.
