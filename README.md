@@ -113,21 +113,23 @@ dashboard reads (`dashboard/archivist.pbix`).
 
 ## Key design decisions
 
-Fuller reasoning, including the retrieval bake-off, is in [DECISIONS.md](DECISIONS.md).
+The full reasoning, including the search comparison I ran, is in
+[DECISIONS.md](DECISIONS.md). In plain terms:
 
-1. **Word-based chunking, 500 words with 50 overlap.** Chunking on word boundaries keeps
-   chunks readable and the ~10% overlap preserves context across boundaries so an answer
-   that straddles two chunks isn't lost.
-2. **Hybrid retrieval by normalized weighted sum.** Keyword and semantic each return their
-   top results, each set is min-max normalized to 0–1, and the two are combined as
-   `weight * semantic + (1 - weight) * keyword`. The bake-off showed neither method wins
-   everywhere — semantic handles paraphrases, keyword catches exact terms — so merging them
-   covers more query types. Embeddings are persisted in the database and reused rather than
-   recomputed on every startup.
-3. **Grounded-only generation with deliberate failure handling.** The prompt instructs the
-   model to answer only from the provided context and to say when it can't. Every LLM call
-   sets an explicit timeout, and both timeouts and HTTP 429 rate limits are raised as a
-   `RuntimeError` instead of hanging or crashing silently.
+1. **How documents get split up.** Long documents are cut into smaller pieces of about
+   500 words, and each piece overlaps the one before it by about 50 words. Small pieces
+   are quick to search, and the overlap means an idea that lands right on the line between
+   two pieces still shows up in both, so it doesn't get lost.
+2. **How the search works.** The system looks for relevant pieces two ways at once: one
+   matches the exact words in your question, the other matches the meaning even when you
+   word things differently. Neither is better on its own — exact words are good for names
+   and specific terms, meaning is good for rephrased questions — so the system uses both
+   and ranks the combined results. To stay fast, it works out the meaning of every piece
+   once and saves it, instead of redoing that every time.
+3. **Answers stay grounded, and problems are handled.** The model is told to answer only
+   from the pieces the system found, and to say so when the answer isn't there — so it
+   doesn't make things up. If the outside AI service is slow or busy, the system stops
+   waiting after a set time and reports a clear error instead of freezing.
 
 ## Project status
 
