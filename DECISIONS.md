@@ -24,15 +24,15 @@ The manifest lists only `LLMClient.embed` (one text per call). Embedding the ful
 corpus one chunk at a time (8500+ chunks) is slow and makes far more HTTP requests
 than necessary, so two helpers were added:
 
-- `LLMClient.embed_batch(texts)` — embeds up to 50 chunks in a single request.
-- `update_chunk_embeddings(rows)` — persists the vectors into the `embedding`
+- `LLMClient.embed_batch(texts)`: embeds up to 50 chunks in a single request.
+- `update_chunk_embeddings(rows)`: persists the vectors into the `embedding`
   BLOB column already defined in the schema.
 
 `scripts/embed_corpus.py` runs this once; afterwards `SemanticRetriever.fit`
 reuses the stored vectors instead of re-embedding on every startup. `embed` is
 kept and still used to embed the query at search time.
 
-## Day 14 — Retrieval Bake-Off
+## Day 14: Retrieval Bake-Off
 
 Run against the real corpus (43 Project Gutenberg books). Top 3 shown per
 retriever; scores are cosine similarity. Reproduce with `scratch_bakeoff.py`.
@@ -42,14 +42,14 @@ retriever; scores are cosine similarity. Reproduce with `scratch_bakeoff.py`.
 Query: `whale hunting harpoon`
 
 Keyword:
-1. chunk 120 — Moby Dick (the "Sperm Whale" classification passage)
-2. chunk 127 — Moby Dick (porpoise/whale description)
-3. chunk 8 — Moby Dick (opening whale verse)
+1. chunk 120: Moby Dick (the "Sperm Whale" classification passage)
+2. chunk 127: Moby Dick (porpoise/whale description)
+3. chunk 8: Moby Dick (opening whale verse)
 
 Semantic:
-1. chunk 240 — Moby Dick (fastening an extra line to the harpoon)
-2. chunk 246 — Moby Dick (the struck whale rolling into view)
-3. chunk 247 — Moby Dick (whether the dart is successful)
+1. chunk 240: Moby Dick (fastening an extra line to the harpoon)
+2. chunk 246: Moby Dick (the struck whale rolling into view)
+3. chunk 247: Moby Dick (whether the dart is successful)
 
 Winner: Semantic
 
@@ -64,14 +64,14 @@ returned more general whale description.
 Query: `a young orphan girl adopted by a family living on a farm`
 
 Keyword:
-1. chunk 1242 — Slave ships and slaving (matched the literal word "farm")
-2. chunk 2052 — Anne of Green Gables
-3. chunk 7753 — A Study in Scarlet (matched "farm")
+1. chunk 1242: Slave ships and slaving (matched the literal word "farm")
+2. chunk 2052: Anne of Green Gables
+3. chunk 7753: A Study in Scarlet (matched "farm")
 
 Semantic:
-1. chunk 2054 — Anne of Green Gables
-2. chunk 2076 — Anne of Green Gables ("an orphan and folks were at their wits' end")
-3. chunk 4275 — Frankenstein
+1. chunk 2054: Anne of Green Gables
+2. chunk 2076: Anne of Green Gables ("an orphan and folks were at their wits' end")
+3. chunk 4275: Frankenstein
 
 Winner: Semantic
 
@@ -87,14 +87,14 @@ orphan.
 Query: `Sherlok Holmes detective` (Sherlock misspelled)
 
 Keyword:
-1. chunk 7731 — A Study in Scarlet (a Holmes novel)
-2. chunk 3526 — The Adventures of Sherlock Holmes
-3. chunk 3423 — The Adventures of Sherlock Holmes
+1. chunk 7731: A Study in Scarlet (a Holmes novel)
+2. chunk 3526: The Adventures of Sherlock Holmes
+3. chunk 3423: The Adventures of Sherlock Holmes
 
 Semantic:
-1. chunk 3516 — The Adventures of Sherlock Holmes
-2. chunk 3386 — The Adventures of Sherlock Holmes
-3. chunk 3418 — The Adventures of Sherlock Holmes
+1. chunk 3516: The Adventures of Sherlock Holmes
+2. chunk 3386: The Adventures of Sherlock Holmes
+3. chunk 3418: The Adventures of Sherlock Holmes
 
 Winner: Slight semantic
 
@@ -109,14 +109,14 @@ retrieval kept all three results inside the Sherlock Holmes stories.
 Query: `vampire`
 
 Keyword:
-1. chunk 8413 — Dracula
-2. chunk 8287 — Dracula
-3. chunk 8344 — Dracula
+1. chunk 8413: Dracula
+2. chunk 8287: Dracula
+3. chunk 8344: Dracula
 
 Semantic:
-1. chunk 8288 — Dracula ("take it, then, that the vampire...")
-2. chunk 8413 — Dracula
-3. chunk 8287 — Dracula
+1. chunk 8288: Dracula ("take it, then, that the vampire...")
+2. chunk 8413: Dracula
+3. chunk 8287: Dracula
 
 Winner: Tie
 
@@ -130,14 +130,14 @@ word gets handled well either way.
 Query: `What creature does the scientist assemble from dead body parts?`
 
 Keyword:
-1. chunk 3975 — Thus Spake Zarathustra (matched "body", "earth")
-2. chunk 8252 — Dracula
-3. chunk 4330 — Frankenstein
+1. chunk 3975: Thus Spake Zarathustra (matched "body", "earth")
+2. chunk 8252: Dracula
+3. chunk 4330: Frankenstein
 
 Semantic:
-1. chunk 2437 — The war of the worlds
-2. chunk 2359 — The war of the worlds
-3. chunk 6609 — The Time Machine
+1. chunk 2437: The war of the worlds
+2. chunk 2359: The war of the worlds
+3. chunk 6609: The Time Machine
 
 Winner: Keyword
 
@@ -156,15 +156,15 @@ semantic retrieval drifted to other science-fiction books and missed it.
 - Neither is reliable when the query describes the content without using any of
   the book's own words. This is why the hybrid retriever combines both in Day 16.
 
-## Day 16 — Hybrid Retrieval
+## Day 16: Hybrid Retrieval
 
-- Default hybrid weight is `0.5` — an even split between semantic and keyword
+- Default hybrid weight is `0.5`: an even split between semantic and keyword
   scores (`weight * semantic + (1 - weight) * keyword`). The bake-off showed each
   retriever winning different query types, so neither is favored by default.
 - All retrievers return a fixed `top_k = 5`. It is not exposed as a request
   parameter yet; five chunks is enough context for the prompt without bloating it.
 
-## Day 17 — LLM Error Handling
+## Day 17: LLM Error Handling
 
 Every request sets an explicit timeout (30s for single completion and embedding
 calls, 120s for the batch-embedding call, which sends up to 50 chunks at once).
@@ -173,6 +173,6 @@ A `requests.Timeout` is caught and re-raised as a RuntimeError with a clear
 message, so a slow or unresponsive provider fails fast instead of hanging the
 request indefinitely.
 
-HTTP 429 rate-limit responses are handled the same way — raised as a RuntimeError.
+HTTP 429 rate-limit responses are handled the same way: raised as a RuntimeError.
 The client does not retry automatically because this project does not yet need
 retry or exponential-backoff infrastructure.

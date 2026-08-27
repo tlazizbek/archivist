@@ -14,16 +14,16 @@ Project Gutenberg.
 
 The system has six layers:
 
-1. **Ingestion** (`archivist/ingestion/`) — read the files, clean the text, and split it into pieces.
-2. **Storage** (`archivist/db/`) — an SQLite database with three tables: `documents`, `chunks`,
+1. **Ingestion** (`archivist/ingestion/`): read the files, clean the text, and split it into pieces.
+2. **Storage** (`archivist/db/`): an SQLite database with three tables: `documents`, `chunks`,
    and `query_logs` (`query_feedback` is for later).
-3. **Retrieval** (`archivist/retrieval/`) — three searchers: keyword (TF-IDF), semantic
+3. **Retrieval** (`archivist/retrieval/`): three searchers: keyword (TF-IDF), semantic
    (embeddings), and a hybrid that merges the two.
-4. **Generation** (`archivist/generation/`) — build the prompt from the pieces that were found
+4. **Generation** (`archivist/generation/`): build the prompt from the pieces that were found
    and send it to the LLM.
-5. **Interface** (`archivist/cli.py`, `archivist/api/`) — an `ingest` command for the terminal
+5. **Interface** (`archivist/cli.py`, `archivist/api/`): an `ingest` command for the terminal
    and a FastAPI service with `/ingest`, `/query`, and `/health`.
-6. **Analytics** (`analytics/`) — pull the logs with Pandas, save them as CSVs, and analyze them
+6. **Analytics** (`analytics/`): pull the logs with Pandas, save them as CSVs, and analyze them
    in a notebook.
 
 ## Requirements
@@ -124,17 +124,17 @@ The full reasoning, including the search comparison I ran, is in
    two pieces still shows up in both, so it doesn't get lost.
 2. **How the search works.** The system looks for relevant pieces two ways at once: one
    matches the exact words in your question, the other matches the meaning even when you
-   word things differently. Neither is better on its own — exact words are good for names
-   and specific terms, meaning is good for rephrased questions — so the system uses both
+   word things differently. Neither is better on its own: exact words are good for names
+   and specific terms, meaning is good for rephrased questions, so the system uses both
    and ranks the combined results. To stay fast, it works out the meaning of every piece
    once and saves it, instead of redoing that every time.
 3. **Answers stay grounded, and problems are handled.** The model is told to answer only
-   from the pieces the system found, and to say so when the answer isn't there — so it
+   from the pieces the system found, and to say so when the answer isn't there, so it
    doesn't make things up. If the outside AI service is slow or busy, the system stops
    waiting after a set time and reports a clear error instead of freezing.
 
 ## Project status
 
-The core project is done through the analytics layer. The stretch goals — reranking, an agent
-loop, and an evaluation harness — are planned but not built yet. `archivist/retrieval/reranker.py`
+The core project is done through the analytics layer. The stretch goals (reranking, an agent
+loop, and an evaluation harness) are planned but not built yet. `archivist/retrieval/reranker.py`
 and `archivist/agent/loop.py` are empty placeholders for them.
