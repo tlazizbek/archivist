@@ -156,6 +156,14 @@ semantic retrieval drifted to other science-fiction books and missed it.
 - Neither is reliable when the query describes the content without using any of
   the book's own words. This is why the hybrid retriever combines both in Day 16.
 
+## Day 16 — Hybrid Retrieval
+
+- Default hybrid weight is `0.5` — an even split between semantic and keyword
+  scores (`weight * semantic + (1 - weight) * keyword`). The bake-off showed each
+  retriever winning different query types, so neither is favored by default.
+- All retrievers return a fixed `top_k = 5`. It is not exposed as a request
+  parameter yet; five chunks is enough context for the prompt without bloating it.
+
 ## Day 17 — LLM Error Handling
 
 Every request sets an explicit timeout (30s for single completion and embedding

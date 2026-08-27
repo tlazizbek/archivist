@@ -5,7 +5,7 @@ knowledge base. It reads `.txt` and `.md` files and splits them into small overl
 pieces. It then indexes those pieces for two kinds of search: matching the exact words, and
 matching the meaning. When you ask a question, it finds the most relevant pieces and answers
 from them with an LLM that is told to use only what it found. Every question is logged, and
-those logs feed a small analytics layer and a Power BI dashboard.
+those logs feed a small analytics layer.
 
 This is my Boot.dev backend + AI capstone. I built it on 43 public-domain books from
 Project Gutenberg.
@@ -23,8 +23,8 @@ The system has six layers:
    and send it to the LLM.
 5. **Interface** (`archivist/cli.py`, `archivist/api/`) — an `ingest` command for the terminal
    and a FastAPI service with `/ingest`, `/query`, and `/health`.
-6. **Analytics** (`analytics/`) — pull the logs with Pandas, save them as CSVs, and chart them
-   in Power BI.
+6. **Analytics** (`analytics/`) — pull the logs with Pandas, save them as CSVs, and analyze them
+   in a notebook.
 
 ## Requirements
 
@@ -111,8 +111,7 @@ uv run python -m analytics.export           # writes analytics/exports/*.csv
 ```
 
 `analytics/notebooks/analysis.ipynb` works out queries per day, average and p95 latency, which
-search methods were used, and the most-retrieved documents. It saves the CSVs that the Power BI
-dashboard (`dashboard/archivist.pbix`) reads.
+search methods were used, and the most-retrieved documents, saving the results as CSVs.
 
 ## Key design decisions
 
