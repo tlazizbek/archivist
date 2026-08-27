@@ -53,10 +53,9 @@ Semantic:
 
 Winner: Semantic
 
-Reason: Both retrievers correctly stayed inside Moby Dick, but keyword matched on
-raw whale vocabulary and returned descriptive/classification passages, while
-semantic surfaced the chunks that actually describe harpooning a whale — closer
-to the intent of the query.
+Reason: Both retrievers stayed inside Moby Dick, but semantic retrieval returned
+the chunks that actually describe harpooning the whale while keyword retrieval
+returned more general whale description.
 
 ---
 
@@ -76,10 +75,10 @@ Semantic:
 
 Winner: Semantic
 
-Reason: This is the clearest split. Keyword was pulled off-topic by the literal
-word "farm" and put an unrelated book first; semantic understood the description
-and returned two Anne of Green Gables chunks, one of which is explicitly about
-being an orphan.
+Reason: Keyword retrieval got pulled off by the literal word "farm" and put an
+unrelated book first, while semantic retrieval understood the description and
+returned two Anne of Green Gables chunks, one of them directly about being an
+orphan.
 
 ---
 
@@ -99,10 +98,9 @@ Semantic:
 
 Winner: Slight semantic
 
-Reason: Both landed on Holmes material despite the misspelling. The typo hurt
-less than expected because two of the three query words ("Holmes", "detective")
-were spelled correctly, so keyword still had exact terms to match. Semantic was
-more consistent, keeping all three results inside the Sherlock Holmes stories.
+Reason: Both retrievers found Holmes content despite the misspelling, mostly
+because "Holmes" and "detective" were still spelled right, but semantic
+retrieval kept all three results inside the Sherlock Holmes stories.
 
 ---
 
@@ -122,9 +120,8 @@ Semantic:
 
 Winner: Tie
 
-Reason: A single distinctive word both methods handle well — every result is
-from Dracula. Semantic's top chunk is the one that most directly discusses the
-vampire, but the difference is marginal.
+Reason: Both retrievers returned only Dracula chunks, so a single distinctive
+word gets handled well either way.
 
 ---
 
@@ -144,23 +141,20 @@ Semantic:
 
 Winner: Keyword
 
-Reason: The surprising one. The correct answer is Frankenstein, and neither
-retriever handled it cleanly. Keyword at least got Frankenstein into the top 3
-via the literal word "body"; semantic over-generalized to the "science-fiction
-creature" theme and returned War of the Worlds and The Time Machine, missing
-Frankenstein entirely.
+Reason: The correct book is Frankenstein and neither retriever handled it well,
+but keyword retrieval at least got it into the top 3 on the word "body" while
+semantic retrieval drifted to other science-fiction books and missed it.
 
 ---
 
 ### Takeaways
 
-- Semantic clearly wins on paraphrase (query 2) and is steadier on short or
-  ambiguous queries (3, 4).
-- Keyword can still win when a distinctive literal term is present, and it
-  narrowly beat semantic on the hardest query (5).
-- Neither is reliable on an indirect description that names none of the book's
-  own vocabulary. This split is exactly what motivates the hybrid retriever in
-  Day 16.
+- Semantic retrieval wins on paraphrases (query 2) and holds up better on short
+  or misspelled queries (3, 4).
+- Keyword retrieval still wins when a distinctive exact word is present, and it
+  beat semantic on the hardest query (5).
+- Neither is reliable when the query describes the content without using any of
+  the book's own words. This is why the hybrid retriever combines both in Day 16.
 
 ## Day 17 — LLM Error Handling
 
