@@ -35,7 +35,7 @@ kept and still used to embed the query at search time.
 ## Day 14: Retrieval Bake-Off
 
 Run against the real corpus (43 Project Gutenberg books). Top 3 shown per
-retriever; scores are cosine similarity. Reproduce with `scratch_bakeoff.py`.
+retriever; scores are cosine similarity. Reproduce with `scripts/bakeoff.py`.
 
 ### 1. Exact-term query
 
