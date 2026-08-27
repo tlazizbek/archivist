@@ -213,12 +213,49 @@ The core project is complete through the analytics layer. The stretch goals (rer
 agent loop, and an evaluation harness) are planned but not built yet;
 `archivist/retrieval/reranker.py` and `archivist/agent/loop.py` are empty placeholders.
 
-## Contributing
+## 🤝 Contributing
 
-This is a personal capstone project, so it is not looking for feature contributions.
-Bug reports and suggestions are welcome:
+This is a personal capstone project, but if you want to pull it down and play with it,
+here is the full local-development setup.
 
-1. Open an issue describing the problem or idea.
-2. If you want to send a fix, fork the repo and create a branch.
-3. Make sure the tests pass with `uv run pytest`.
-4. Open a pull request that explains what changed and why.
+### Clone the repo
+
+```bash
+git clone https://github.com/tlazizbek/archivist.git
+cd archivist
+```
+
+### Install dependencies
+
+This project uses [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv sync
+```
+
+### Configure your environment
+
+```bash
+cp .env.example .env
+# then edit .env and fill in LLM_API_KEY and LLM_BASE_URL
+```
+
+### Run the test suite
+
+The tests are offline and fast (no database or network required):
+
+```bash
+uv run pytest
+```
+
+### Run it locally
+
+```bash
+uv run archivist start --docs data/raw
+```
+
+### Submit a pull request
+
+Bug reports and suggestions are welcome. Please open an issue first to discuss the change,
+then fork the repository, create a branch, make sure `uv run pytest` passes, and open a pull
+request against `main` describing what changed and why.
