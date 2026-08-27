@@ -27,14 +27,19 @@ It ships with a one-command launcher, a terminal CLI, and a FastAPI web service.
 
 ## Motivation
 
-This is my **Boot.dev backend + AI capstone**. I wanted to build a real
-Retrieval-Augmented Generation system end to end rather than glue together a demo:
-document ingestion and chunking, a proper storage layer, more than one retrieval
-strategy compared head to head, grounded generation with sensible failure handling,
-and analytics on top of real usage.
+Ever had an answer you *know* is sitting somewhere in a folder full of documents, but you
+cannot find it? `Ctrl+F` only works when you already know the exact words, which is the one
+thing you usually do not have. So I tried the obvious 2024 move: paste it into a chatbot and
+ask. That was worse. The model would answer with total confidence about things that were
+nowhere in my files, and I had no way to tell what was real. I wanted the convenience of
+"just ask a question" without the part where the machine makes things up.
 
-To keep it honest, I built and tested it on **43 public-domain books from Project
-Gutenberg**, so the search has to work over real, messy, full-length text.
+So I built **Archivist**. It finds the passages that actually exist in your documents first,
+then makes the LLM answer using only those, and shows you the sources so you can check. This
+is also my **Boot.dev backend + AI capstone**: I wanted to build a real
+Retrieval-Augmented Generation pipeline end to end rather than a demo, so I tested it on **43
+public-domain books from Project Gutenberg**, where the search has to hold up over real,
+messy, full-length text.
 
 ## Quick Start
 
