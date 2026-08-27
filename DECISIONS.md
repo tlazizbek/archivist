@@ -140,8 +140,13 @@ Frankenstein entirely.
 
 ## Day 17 — LLM Error Handling
 
-The LLM client uses a 30-second request timeout.
+Every request sets an explicit timeout (30s for single completion and embedding
+calls, 120s for the batch-embedding call, which sends up to 50 chunks at once).
 
-Timeouts raise a RuntimeError instead of waiting indefinitely.
+A `requests.Timeout` is caught and re-raised as a RuntimeError with a clear
+message, so a slow or unresponsive provider fails fast instead of hanging the
+request indefinitely.
 
-HTTP 429 rate-limit responses also raise a RuntimeError. The client does not retry automatically because this project does not yet need retry or exponential-backoff infrastructure.
+HTTP 429 rate-limit responses are handled the same way — raised as a RuntimeError.
+The client does not retry automatically because this project does not yet need
+retry or exponential-backoff infrastructure.

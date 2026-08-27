@@ -5,18 +5,21 @@ from archivist.config import LLM_API_KEY, LLM_BASE_URL
 
 class LLMClient:
     def embed(self, text: str) -> list[float]:
-        response = requests.post(
-            f"{LLM_BASE_URL}/embeddings",
-            headers={
-                "Authorization": f"Bearer {LLM_API_KEY}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "input": text,
-                "model": "text-embedding-3-small"
-            },
-            timeout=30,
-        )
+        try:
+            response = requests.post(
+                f"{LLM_BASE_URL}/embeddings",
+                headers={
+                    "Authorization": f"Bearer {LLM_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "input": text,
+                    "model": "text-embedding-3-small"
+                },
+                timeout=30,
+            )
+        except requests.Timeout as error:
+            raise RuntimeError("LLM request timed out") from error
 
         if response.status_code == 429:
             raise RuntimeError(
@@ -30,18 +33,21 @@ class LLMClient:
         return data["data"][0]["embedding"]
 
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
-        response = requests.post(
-            f"{LLM_BASE_URL}/embeddings",
-            headers={
-                "Authorization": f"Bearer {LLM_API_KEY}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "input": texts,
-                "model": "text-embedding-3-small",
-            },
-            timeout=120,
-        )
+        try:
+            response = requests.post(
+                f"{LLM_BASE_URL}/embeddings",
+                headers={
+                    "Authorization": f"Bearer {LLM_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "input": texts,
+                    "model": "text-embedding-3-small",
+                },
+                timeout=120,
+            )
+        except requests.Timeout as error:
+            raise RuntimeError("LLM request timed out") from error
 
         if response.status_code == 429:
             raise RuntimeError(
@@ -61,23 +67,26 @@ class LLMClient:
         ]
 
     def complete(self, prompt: str) -> str:
-        response = requests.post(
-            f"{LLM_BASE_URL}/chat/completions",
-            headers={
-                "Authorization": f"Bearer {LLM_API_KEY}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": "openrouter/free",
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    }
-                ],
-            },
-            timeout=30,
-        )
+        try:
+            response = requests.post(
+                f"{LLM_BASE_URL}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {LLM_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": "openrouter/free",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": prompt,
+                        }
+                    ],
+                },
+                timeout=30,
+            )
+        except requests.Timeout as error:
+            raise RuntimeError("LLM request timed out") from error
 
         if response.status_code == 429:
             raise RuntimeError(
