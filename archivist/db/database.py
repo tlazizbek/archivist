@@ -5,13 +5,13 @@ from collections.abc import Iterator
 from pathlib import Path
 from sqlite3 import Connection
 
-from archivist.config import DB_PATH
+from archivist import config
 from archivist.models import Chunk, ChunkRecord, RawDocument, QueryLogEntry
 
 
 def get_connection() -> Connection:
     connection = sqlite3.connect(
-        DB_PATH,
+        config.DB_PATH,
         check_same_thread=False,
     )
     connection.row_factory = sqlite3.Row
