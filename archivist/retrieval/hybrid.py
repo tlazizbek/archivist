@@ -1,6 +1,13 @@
+from typing import Protocol
+
 import numpy as np
 
 from archivist.models import ChunkRecord, ScoredChunk
+
+
+class Retriever(Protocol):
+    def search(self, query: str, top_k: int) -> list[ScoredChunk]:
+        ...
 
 
 class ScoreIndex:
@@ -22,7 +29,12 @@ class ScoreIndex:
 
 
 class HybridRetriever:
-    def __init__(self, keyword, semantic, weight: float) -> None:
+    def __init__(
+        self,
+        keyword: Retriever,
+        semantic: Retriever,
+        weight: float,
+    ) -> None:
         self.keyword = keyword
         self.semantic = semantic
         self.weight = weight
