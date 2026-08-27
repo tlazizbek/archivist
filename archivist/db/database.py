@@ -9,7 +9,7 @@ from archivist import config
 from archivist.models import Chunk, ChunkRecord, RawDocument, QueryLogEntry
 
 
-def get_connection() -> Connection:
+def _get_connection() -> Connection:
     connection = sqlite3.connect(
         config.DB_PATH,
         check_same_thread=False,
@@ -21,7 +21,7 @@ def get_connection() -> Connection:
 @contextmanager
 def connect() -> Iterator[Connection]:
     """Yield a connection that is committed on success and always closed."""
-    connection = get_connection()
+    connection = _get_connection()
 
     try:
         yield connection
