@@ -20,44 +20,17 @@ all runnable from a single command.
 
 ## Description
 
-I kept losing answers I *knew* were sitting somewhere in a folder of documents.
-`Ctrl+F` only helps when you already know the exact words — the one thing you
-never have when you're searching — and pasting the question into a chatbot was
-worse, because it answered with total confidence about things that were nowhere
-in my files. Archivist is my answer to both failures: a Retrieval-Augmented
-Generation pipeline that finds the passages that actually exist in your
-documents first, then forces the LLM to answer from only those and returns the
-source passages so you can verify every claim. I built it against 43 full-length
-public-domain books from Project Gutenberg, so the retrieval had to hold up on
-real, messy text rather than a toy corpus.
+Ask a question and Archivist:
 
-It uses two search methods because one alone kept failing, and they failed in
-opposite ways. Keyword search (TF-IDF) is literal: ask for "a young orphan girl
-adopted by a family on a farm" and it fixates on the word *farm*, surfacing
-passages about slave ships while missing *Anne of Green Gables* entirely.
-Embedding search fixes that by matching meaning instead of words — but it blurs
-exact, rare terms and proper nouns that keyword search nails cold. I ran a
-bake-off on the real corpus, watched each method win the queries the other lost,
-and settled on a hybrid retriever that scores both and combines them, so a
-question phrased in your own words and a question with one exact term both land.
-Archivist runs from a single command as a CLI or a FastAPI service, and logs
-every query into a small analytics layer.
+1. **Finds** the most relevant passages in your documents, using two kinds of search at
+   once: exact-word matching (TF-IDF) and meaning-based matching (embeddings).
+2. **Answers** from those passages with an LLM that is instructed to use only what it
+   found, and to say so when the answer is not there, so it does not make things up.
+3. **Shows its work** by returning the exact passages it used as sources.
+4. **Logs** every question, which feeds a small analytics layer (queries per day,
+   latency, most-used search methods, most-retrieved documents).
 
-## Motivation
-
-Ever had an answer you *know* is sitting somewhere in a folder full of documents, but you
-cannot find it? `Ctrl+F` only works when you already know the exact words, which is the one
-thing you usually do not have. So I tried the obvious 2024 move: paste it into a chatbot and
-ask. That was worse. The model would answer with total confidence about things that were
-nowhere in my files, and I had no way to tell what was real. I wanted the convenience of
-"just ask a question" without the part where the machine makes things up.
-
-So I built **Archivist**. It finds the passages that actually exist in your documents first,
-then makes the LLM answer using only those, and shows you the sources so you can check. This
-is also my **Boot.dev backend + AI capstone**: I wanted to build a real
-Retrieval-Augmented Generation pipeline end to end rather than a demo, so I tested it on **43
-public-domain books from Project Gutenberg**, where the search has to hold up over real,
-messy, full-length text.
+It ships with a one-command launcher, a terminal CLI, and a FastAPI web service.
 
 ## 🚀 Quick Start
 
